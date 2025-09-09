@@ -1,4 +1,4 @@
-import { useActionState } from "react";
+import { useActionState, useEffect } from "react";
 import { z } from "zod";
 import {
   FormLabel,
@@ -28,6 +28,15 @@ export default function LoginPage() {
     password: z.string().min(1, "Password harus diisi"),
   });
 
+  useEffect(() => {
+    const alertTimer = setTimeout(() => {
+      dispatch(setAlert({ show: false, message: "" }));
+    }, 3000);
+    return () => {
+      clearTimeout(alertTimer);
+    };
+  }, [errorAlert, dispatch]);
+
   const submitForm = async (prevState, values) => {
     const prevData = {
       username: values.get("username"),
@@ -51,10 +60,8 @@ export default function LoginPage() {
       dispatch(setAuth({ token: data.access_token, user: data.user }));
 
       //setTimeout(()=>{
-        navigate("/");
+      navigate("/");
       //},500)
-
-      
     } catch (error) {
       console.log(error);
       // show message error when failed in add data

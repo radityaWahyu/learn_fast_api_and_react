@@ -1,5 +1,6 @@
 import { useSelector } from "react-redux";
 import { Navigate } from "react-router";
+import SpinnerLoading from "../SpinnerLoading";
 
 export default function ProtectedRoute({ children, roles }) {
   const token = localStorage.getItem("token");
@@ -8,7 +9,7 @@ export default function ProtectedRoute({ children, roles }) {
 
   if (token && loadingFetchUser) {
     console.log('loading protected layout')
-    return <div>Loading...</div>;
+    return <SpinnerLoading/>;
   }
 
   if (roles && user && !roles.includes(user.role)) {

@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Navigate } from "react-router";
 import { useDispatch, useSelector } from "react-redux";
 import { setAlert, fetchUser } from "../../redux/actions/authSlice";
+import SpinnerLoading from "../SpinnerLoading";
 
 export default function AuthLayout({ children }) {
   const dispatch = useDispatch();
@@ -12,8 +13,11 @@ export default function AuthLayout({ children }) {
 
   useEffect(() => {
     // console.log('effect')
-    setTimeout(()=>setUserFetched(true),500)
+    const userFetchedTimer = setTimeout(() => setUserFetched(true), 500);
     
+    return () => {
+      clearTimeout(userFetchedTimer);
+    };
   }, []);
   useEffect(() => {
     if (token && user.length == 0 && !userFetched) {
@@ -42,7 +46,7 @@ export default function AuthLayout({ children }) {
 
   if (token && !userFetched) {
     console.log("show loading");
-    return <div>Loading...</div>;
+    return <SpinnerLoading />;
   }
 
   return <>{children}</>;
