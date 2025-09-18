@@ -6,10 +6,13 @@ from database import engine
 from routers import question_router,choice_router, user_router
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.exceptions import RequestValidationError
+from fastapi_pagination import add_pagination, Page
+from fastapi_pagination.customization import CustomizedPage, UseParamsFields
 
 models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
+add_pagination(app)
 
 origins = ['http://localhost:5173']
 
@@ -24,6 +27,8 @@ app.add_middleware(
 app.include_router(user_router.router, prefix="/api/v1/user")
 app.include_router(question_router.router)
 app.include_router(choice_router.router)
+
+CustomPage = CustomizedPage[Page, UseParamsFields(size=2, page=1)]
 
 @app.exception_handler(RequestValidationError)
 async def custom_validation_exception_handler(request, exc: RequestValidationError):

@@ -1,7 +1,7 @@
 import { Outlet } from "react-router";
 import { Button } from "@mui/joy";
 import { clearAuth, setAlert } from "../../redux/actions/authSlice";
-import { useNavigate, Navigate } from "react-router";
+import { useNavigate } from "react-router";
 import { useDispatch } from "react-redux";
 import LogoutIcon from "@mui/icons-material/Logout";
 

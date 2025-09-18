@@ -7,13 +7,19 @@ import api from "../api";
 import TableCrud from "../components/TableCrud";
 import Input from "@mui/joy/Input";
 import { useSelector, useDispatch } from "react-redux";
+import { useSearchParams } from "react-router";
 import { closeSnackbar } from "../redux/actions/snackbarSlice";
 
 function App() {
+  const [searchParams, setSearchParams] = useSearchParams();
   const [refreshTable, setRefreshTable] = useState(0);
+  const page = searchParams.get("page");
+  const size = searchParams.get("size");
   const snackbarShow = useSelector((state) => state.snackbar.show);
   const snackbarMessage = useSelector((state) => state.snackbar.message);
   const dispatch = useDispatch();
+
+
 
   const submitForm = async (prevState, values) => {
     try {
@@ -48,6 +54,28 @@ function App() {
 
   const onDeleted = (value) => {
     if (value) setRefreshTable((prevState) => prevState + 1);
+  };
+
+  const onChangePage = (value) => {
+    console.log(`from App component event onChangePage with value:${value}`);
+    setSearchParams((prevParam) => {
+      const newParams = new URLSearchParams(prevParam);
+      newParams.set("page", value);
+      return newParams;
+    });
+  };
+
+  const onChangePageSize = (value) => {
+    console.log(
+      `from App component event onChangePageSize with value:${value}`
+    );
+    setSearchParams((prevParam) => {
+      const newParams = new URLSearchParams(prevParam);
+      newParams.set("size", value);
+      newParams.set("page", 1)
+      return newParams;
+    });
+    
   };
 
   return (
@@ -96,7 +124,14 @@ function App() {
               </Button>
             </form>
           </div>
-          <TableCrud refresh={refreshTable} onDeleted={onDeleted} />
+          <TableCrud
+            refresh={refreshTable}
+            onDeleted={onDeleted}
+            onChangePage={onChangePage}
+            onChangePageSize={onChangePageSize}
+            pageRow={page ? page: 1}
+            sizeRow={size ? size: 2}
+          />
         </div>
       </div>
       <Snackbar

@@ -7,6 +7,9 @@ class ChoiceBase(BaseModel):
     choice_text: str
     is_correct: bool
 
+
+
+
 class QuestionBase(BaseModel):
     question_text: str = Field(min_length=1)
     question_category: str = Field(...,min_length=1)
@@ -17,7 +20,8 @@ class QuestionBase(BaseModel):
             'value_error.string_too_short': '{limit_value} harus diisi',
         }
 
-
+class ResponseQuestions(QuestionBase):
+    id:int
 
 class TokenData(BaseModel):
     username:str | None = None

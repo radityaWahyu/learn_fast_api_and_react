@@ -1,26 +1,31 @@
-from fastapi import APIRouter, Response, HTTPException,Depends
+from fastapi import APIRouter, Query, Response, HTTPException,Depends
 from fastapi.responses import JSONResponse
 from starlette import status
 import models
 from database import db_depedency
-from schema import QuestionBase
+from schema import QuestionBase, ResponseQuestions
 from models import User
 from auth import get_current_user
+from sqlalchemy import select
+from fastapi_pagination import Page, add_pagination, paginate,Params
+from fastapi_pagination.ext.sqlalchemy import paginate
 
 router = APIRouter(prefix="/api/v1/questions", tags=["questions"],)
 
-@router.get("/")
-async def list_question(db:db_depedency, response: Response, current_user:User=Depends(get_current_user)):
-    result = db.query(models.Questions).all()
-    response.status_code = status.HTTP_200_OK
+@router.get("/", response_model=Page[ResponseQuestions])
+async def list_question(db:db_depedency, response: Response,page:int=Query(default=1,ge=1, description="Page number"),size:int=Query(default=2, ge=1, le=50, description="Item per page"), current_user:User=Depends(get_current_user)):
 
-    if not result:
+    params = Params(page=page, size=size)
+    # result = db.query(models.Questions).all()
+    response.status_code = status.HTTP_200_OK
+    pagination_result = paginate(db,select(models.Questions),params)
+
+    if not pagination_result.items:
         raise HTTPException(status_code=404, detail="Question not found")
     
-    return {
-        'message':"success",
-        'data': result
-    }
+    return pagination_result
+    
+    
 
 
 @router.get("/{question_id}")
