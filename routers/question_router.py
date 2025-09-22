@@ -7,18 +7,25 @@ from schema import QuestionBase, ResponseQuestions
 from models import User
 from auth import get_current_user
 from sqlalchemy import select
-from fastapi_pagination import Page, add_pagination, paginate,Params
+from fastapi_pagination import Page, paginate,Params
 from fastapi_pagination.ext.sqlalchemy import paginate
+from typing import Optional
 
 router = APIRouter(prefix="/api/v1/questions", tags=["questions"],)
 
 @router.get("/", response_model=Page[ResponseQuestions])
-async def list_question(db:db_depedency, response: Response,page:int=Query(default=1,ge=1, description="Page number"),size:int=Query(default=2, ge=1, le=50, description="Item per page"), current_user:User=Depends(get_current_user)):
+async def list_question(db:db_depedency, response: Response,page:int=Query(default=1,ge=1, description="Page number"),size:int=Query(default=2, ge=1, le=50, description="Item per page"),search:Optional[str] = Query(None, min_length=2,max_length=50),current_user:User=Depends(get_current_user)):
 
     params = Params(page=page, size=size)
     # result = db.query(models.Questions).all()
+
+    sql = select(models.Questions)
+
+    if search:
+        sql = sql.filter(models.Questions.question_text.ilike(f"%{search}%"))
+
     response.status_code = status.HTTP_200_OK
-    pagination_result = paginate(db,select(models.Questions),params)
+    pagination_result = paginate(db,sql,params)
 
     if not pagination_result.items:
         raise HTTPException(status_code=404, detail="Question not found")

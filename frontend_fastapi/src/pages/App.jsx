@@ -19,8 +19,6 @@ function App() {
   const snackbarMessage = useSelector((state) => state.snackbar.message);
   const dispatch = useDispatch();
 
-
-
   const submitForm = async (prevState, values) => {
     try {
       const newData = {
@@ -72,10 +70,22 @@ function App() {
     setSearchParams((prevParam) => {
       const newParams = new URLSearchParams(prevParam);
       newParams.set("size", value);
-      newParams.set("page", 1)
+      newParams.set("page", 1);
       return newParams;
     });
-    
+  };
+
+  const onSearch = (value) => {
+    if (value == false) {
+      searchParams.delete("search");
+      setSearchParams(searchParams);
+    } else {
+      setSearchParams((prevParam) => {
+        const newParams = new URLSearchParams(prevParam);
+        newParams.set("search", value);
+        return newParams;
+      });
+    }
   };
 
   return (
@@ -129,8 +139,9 @@ function App() {
             onDeleted={onDeleted}
             onChangePage={onChangePage}
             onChangePageSize={onChangePageSize}
-            pageRow={page ? page: 1}
-            sizeRow={size ? size: 2}
+            pageRow={page ? page : 1}
+            sizeRow={size ? size : 2}
+            onSearchBox={onSearch}
           />
         </div>
       </div>

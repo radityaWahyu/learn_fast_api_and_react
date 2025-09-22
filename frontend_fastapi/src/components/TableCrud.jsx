@@ -11,11 +11,13 @@ import api from "../api";
 import { useDispatch } from "react-redux";
 import { showSnackbar } from "../redux/actions/snackbarSlice";
 import { useNavigate } from "react-router";
+import SearchBox from "./SearchBox";
 
 const TableSkeleton = lazy(() => import("./TableSkeleton"));
 
 export default function TableCrud({
   refresh,
+  onSearchBox,
   onDeleted,
   pageRow,
   sizeRow,
@@ -25,6 +27,7 @@ export default function TableCrud({
   const [questions, setQuestions] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [confirmDelete, setConfirmDelete] = useState(false);
+  const [searchText, setSearhText] = useState("");
   const [confirmLoading, setConfirmLoading] = useState(false);
   const [idRow, setIdRow] = useState();
   const [page, setPage] = useState(pageRow);
@@ -53,6 +56,11 @@ export default function TableCrud({
     setConfirmDelete(true);
   };
 
+  const onSearch = (value) => {
+    onSearchBox(value);
+    setSearhText(value);
+  };
+
   const deleteData = async () => {
     try {
       setConfirmLoading(true);
@@ -75,27 +83,33 @@ export default function TableCrud({
     }
   };
 
+  const fetchQuestion = async () => {
+    try {
+      setIsLoading(true);
+
+      const params = [`page=${pageRow}`,`size=${sizeRow}`]
+
+      if(searchText.length > 0) params.push(`search=${searchText}`)
+
+      const response = await api.get(
+        `/questions?${params.join("&")}`
+      );
+
+      setRowsPerPage(response.data.size);
+      setPage(response.data.page - 1);
+      setCountPage(response.data.total);
+      console.log(response.data);
+      setQuestions(response.data.items);
+    } catch (error) {
+      console.log(error);
+      if (error.status == 404) setQuestions([]);
+    } finally {
+      setTimeout(() => setIsLoading(false), 600);
+    }
+  };
+
   useEffect(() => {
     const controller = new AbortController();
-
-    const fetchQuestion = async () => {
-      try {
-        setIsLoading(true);
-        const response = await api.get(
-          `/questions?page=${pageRow}&size=${sizeRow}`
-        );
-        setRowsPerPage(response.data.size);
-        setPage(response.data.page - 1);
-        setCountPage(response.data.total);
-        console.log(response.data);
-        setQuestions(response.data.items);
-      } catch (error) {
-        console.log(error);
-        if (error.status == 404) setQuestions([]);
-      } finally {
-        setTimeout(() => setIsLoading(false), 600);
-      }
-    };
 
     fetchQuestion();
     console.log(refresh);
@@ -104,7 +118,8 @@ export default function TableCrud({
       controller.abort();
       clearTimeout();
     };
-  }, [refresh, pageRow,sizeRow]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [refresh,searchText, pageRow, sizeRow]);
 
   return (
     <>
@@ -115,6 +130,7 @@ export default function TableCrud({
       >
         <CardOverflow>
           <CardContent>
+            <SearchBox onDelay={onSearch} />
             <Table aria-label="Tabel Pertanyaan">
               <thead>
                 <tr>
